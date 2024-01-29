@@ -4,11 +4,9 @@
 
 import os
 import numpy as np
-
 from PIL import Image
 from pathlib import Path
 from string import ascii_letters
-
 
 SAVE_DIR = 'saved_digits'               # The directory in which to save images.
 DIGITS = [str(i) for i in range(10)]    # List of digits, saved as strings.

@@ -19,15 +19,14 @@ import file_functions as ff
 #                   # INSTRUCTIONS: #                     #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-# 1. Press Enter to set your name.
 
-# 2. Hold left click to draw on the canvas, following the prompt in the window title.
+# 1. Hold left click to draw on the canvas, following the prompt in the window title.
 
-# 3. Hold right click to erase, or reset the canvas with 'R'.
+# 2. Hold right click to erase, or reset the canvas with 'R'.
 
-# 4. Press Spacebar when you are finished drawing.
+# 3. Press Spacebar when you are finished drawing.
 
-# 5. Draw as many digits as you like!
+# 4. Draw as many digits as you like!
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -38,8 +37,6 @@ import file_functions as ff
 
 # SPACE -> Save and continue
 # 'R' -> Reset
-
-# ENTER -> Change name
 
 # ESC -> Quit
 

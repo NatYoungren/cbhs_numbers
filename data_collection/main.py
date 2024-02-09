@@ -216,7 +216,6 @@ def parse_events(canvas: np.ndarray, rects: np.ndarray, brush_size: int, allow_d
     running = True              # By default, keep running the program.
     reset_canvas = False        # By default, do not reset the canvas.
     finished_drawing = False    # By default, do not move on to the next drawing.
-    change_text = False         # By default, do not get new text input.
     
     # Handle input events.
     for event in pg.event.get():
@@ -238,11 +237,6 @@ def parse_events(canvas: np.ndarray, rects: np.ndarray, brush_size: int, allow_d
             # Spacebar moves on to the next drawing.
             elif event.key == pg.K_SPACE:
                 finished_drawing = True
-            
-            # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-            # Enter triggers name update.
-            elif event.key == pg.K_RETURN and ENABLE_NAMES:
-                change_text = True
         
         # Handle quit event (Control-Q or clicking the X on the window).
         elif event.type == pg.QUIT:
@@ -280,59 +274,8 @@ def parse_events(canvas: np.ndarray, rects: np.ndarray, brush_size: int, allow_d
             #       If left mouse button is NOT held, that means the right or middle buttons must be.
             #       In this situation, brush_state = False, and we set all brushed cells to 0. (erasing)
             
-    return running, reset_canvas, finished_drawing, change_text
+    return running, reset_canvas, finished_drawing
 
-
-def parse_name_events(name: str):
-    """ Handle pygame events while updating the name.
-            Backspace removes the last letter.
-            All allowed unicode characters are added to the name.
-            Enter ends the name update.
-    Args:
-        name (str): The current name.
-
-    Returns:
-        (bool, bool, str): Flag to continue running,flag to finish updating name, and the new name string.
-    """
-    # These are the default values we will return each frame unless an event changes them.
-    running = True
-    update_name = True
-    
-    # Handle input events.
-    for event in pg.event.get():
-
-        # Handle keypresses
-        if event.type == pg.KEYDOWN:
-                
-                # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-                # Escape key quits after resolving the current frame.
-                if event.key == pg.K_ESCAPE:
-                    running = False
-                
-                # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-                # Enter ends the name update.
-                elif event.key == pg.K_RETURN:
-                    update_name = False
-                
-                # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-                # Backspace removes the last letter.
-                elif event.key == pg.K_BACKSPACE:
-                    name = name[:-1]
-                    
-                # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-                # All other allowed keys are added to the name.
-                else:
-                    if len(name) < NAME_LENGTH_LIMIT:
-                        new_char = event.unicode
-                        if new_char in ff.ALLOWED_CHARACTERS:
-                            name += new_char
-                    
-        # Handle quit event (Control-Q or clicking the X on the window).
-        elif event.type == pg.QUIT:
-            running = False
-            
-    return running, update_name, name
-    
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                  # SCREEN UPDATING: #                   #

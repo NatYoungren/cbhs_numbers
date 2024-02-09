@@ -47,8 +47,6 @@ import file_functions as ff
 
 # TEXT REGION CONSTANTS
 ENABLE_TEXT = True              # If True, text-input regions will be added to the top and bottom of the window.
-ENABLE_NAMES = True             # If True, will allow users to update the current name (added to image filenames).
-NAME_LENGTH_LIMIT = 16          # Maximum length of the name string.
 TEXT_REGION_H = 100             # Height of the text-input region (in pixels).
 
 # CANVAS CONSTANTS
@@ -115,7 +113,6 @@ ORIGIN_Y = (CANVAS_H - CELL_H * GRID_H) / 2         # NOTE: We use this to cente
 
 ORIGIN_Y += TEXT_REGION_H                           # Offset the canvas vertically by the height of the upper text region.
 
-SCREEN_CENTER = (SCREEN_W/2, SCREEN_H/2)            # To center the name prompt, get the center of the screen (in pixels).
 UPPER_TEXT_POS = (SCREEN_W/2, TEXT_REGION_H/2)      # To center other text, get the text regions centers (in pixels).
 LOWER_TEXT_POS = (SCREEN_W/2, SCREEN_H-TEXT_REGION_H/2)
 
@@ -145,18 +142,15 @@ def main():
                                 grid_shape=(GRID_W, GRID_H))
 
     brush_size = generate_brush_size()  # Generate brush size (in pixels).
-
-
+    
     digit = ff.get_digit()          # Digit to use in prompt.
     adjective = ff.get_adjective()  # Adjective to use in prompt.
-    name = ''                       # Default name to use in prompt.
     
     canvas = None               # 2D Numpy array holding the state of each cell, 0 for empty, 1 for drawn.
                                 # NOTE: This is where the current drawing is stored.
                                 #       We will reset this to a blank array whenever we begin a drawing.
     
     finished_drawing = False    # Flag to move on to the next drawing.
-    update_name = False         # Flag to update the name of the user.
     
     running = True              # Flag to continue running the program.
     reset_canvas = True         # Flag to reset the canvas.
@@ -169,7 +163,7 @@ def main():
         if finished_drawing:
             # If the canvas is all blank or all drawn, don't save it.
             if canvas.any() and not canvas.all():
-                ff.save_canvas(canvas, digit=digit, name=name, adjective=adjective)
+                ff.save_canvas(canvas, digit=digit, adjective=adjective)
                 digit = ff.get_digit()              # Get a new digit.
                 adjective = ff.get_adjective()      # Get a new adjective.
                 brush_size = generate_brush_size()  # Get a new brush size (if RANDOM_BRUSH_SCALE is True).
@@ -181,29 +175,23 @@ def main():
             reset_canvas = False                            # Flag has been resolved, reset it.
         
         # Handle input events.
-        (running, reset_canvas, finished_drawing, update_name) = parse_events(canvas, cell_rects, brush_size)
+        (running, reset_canvas, finished_drawing) = parse_events(canvas, cell_rects, brush_size)
         # NOTE: These flags must be resolved before the next set of events is parsed.
         #   If running = False, the program will exit after this loop finishes.
         #   If reset_canvas = True, the canvas will be reset at the beginning of the next loop.
         #   If finished_drawing = True, the image will be saved and the canvas reset with a new digit at the start of the next loop.
-        #   If update_name = True, the program will read text input from the user to set a new name.
         
         
-        # If flagged, read input events until the user presses Enter or quits.
-        while update_name and running:
-            draw_name_prompt(screen, font, prompt_font, name)
-            pg.display.flip()
-            clock.tick(30)
-            
-            # Handle input events.
-            (running, update_name, name) = parse_name_events(name)
-        
-        # If needed, redraw the current state of the canvas and update the screen.
+        # Redraw the current state of the canvas
         draw_state(screen, canvas, brush_size)
         if ENABLE_TEXT:
-            draw_upper_text(screen, font, prompt_font, name, construct_prompt(digit, adjective, name))
+            draw_upper_text(screen, prompt_font, construct_prompt(digit, adjective))
             draw_lower_text(screen, font)
-            
+        else:
+            # If we are not drawing text to the screen, put the prompt in the window title.
+            pg.display.set_caption(construct_prompt(digit, adjective))
+
+        # Update the screen
         pg.display.flip()
         clock.tick(60)
 

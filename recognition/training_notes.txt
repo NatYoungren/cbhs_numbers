@@ -1,0 +1,6 @@
+PRIOR:
+digit_mnist_model (1-5)
+
+
+
+Dropout:

@@ -133,6 +133,7 @@ def main():
     ocr_net3 = tr.load_model3('recognition/digit_mnist_model3.pt')
     ocr_net4 = tr.load_model4('recognition/digit_mnist_model4.pt')
     ocr_net5 = tr.load_model5('recognition/digit_mnist_model5.pt')
+    ocr_net6 = tr.load_model5('/Users/nathanielyoungren/Desktop/code_projects/cbhs_numbers/ml_training/test_model.pt')
     
     
     # Generate a list of rectangles, one for each cell in the grid.
@@ -155,7 +156,7 @@ def main():
     while running:        
         # If flagged, reset the canvas.
         if reset_canvas:
-            pred, pred2, pred3, pred4, pred5 = ['~']*5
+            pred, pred2, pred3, pred4, pred5, pred6 = ['~']*6
             canvas = np.zeros((GRID_W, GRID_H), dtype=int)  # Set all cells to 0 (empty).
             brush_size = generate_brush_size()  # Get a new brush size (if RANDOM_BRUSH_SCALE is True).
             reset_canvas = False                            # Flag has been resolved, reset it.
@@ -182,15 +183,15 @@ def main():
                 pred2 = tr.evaluate(ocr_net2, canvas)
                 pred3 = tr.evaluate(ocr_net3, canvas)
                 pred4 = tr.evaluate(ocr_net4, canvas)
-                pred5 = tr.evaluate(ocr_net5, canvas, verbose=True)
-            
-            draw_upper_text(screen, font, f'{pred} - {pred2} - {pred3} - {pred4} - {pred5}')
+                pred5 = tr.evaluate(ocr_net5, canvas)
+                pred6 = tr.evaluate(ocr_net6, canvas, verbose=True)
+
+            draw_upper_text(screen, font, f'{pred} - {pred2} - {pred3} - {pred4} - {pred5} - {pred6}')
             draw_lower_text(screen, font)
             
         pg.display.flip()
         clock.tick(60)
-        
-        
+
 
 def random_alignment(img):
     ax1sums = np.sum(img, axis=0)

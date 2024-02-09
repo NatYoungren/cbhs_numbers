@@ -41,7 +41,7 @@ ADJECTIVES = [' crooked',
 ACTIVE_CELL_COLOR   = (255, 255, 255)   # Color of drawn cells (R, G, B) is white.
 INACTIVE_CELL_COLOR = (000, 000, 000)   # Color of blank cells (R, G, B) is black.
 
-ALLOWED_CHARACTERS = ascii_letters      # Characters allowed in names and adjectives.
+ALLOWED_CHARACTERS = ascii_letters      # Characters allowed in filename elements.
 
 # Returns a digit with the fewest images.
 def get_digit() -> str:
@@ -69,18 +69,14 @@ def populate_digit_counts(target_dir: str=SAVE_DIR) -> None:
 # Saves a canvas as a png to the SAVE_DIR.
 def save_canvas(canvas: np.ndarray,
                 digit: str,
-                name: str='',
                 adjective: str='',
                 target_dir: str=SAVE_DIR,
                 img_ext='png') -> None:
     
-    # Remove all non-alphabetic characters from name and adjective.
-    name = whitelist_chars(name.lower(), ALLOWED_CHARACTERS)
+    # Remove all non-alphabetic characters from adjective (just in case).
     adjective = whitelist_chars(adjective.lower(), ALLOWED_CHARACTERS)
     
-    # If name or adjective is blank, replace with a unique placeholder.
-    if len(name) == 0:
-        name = '$NONAME'
+    # If adjective is blank, replace with a unique placeholder.
     if len(adjective) == 0:
         adjective = '$NOADJ'
         
@@ -88,9 +84,9 @@ def save_canvas(canvas: np.ndarray,
     digit_dir = os.path.join(target_dir, digit)
     Path(digit_dir).mkdir(parents=True, exist_ok=True)
     
-    # Generate the filename template (e.g. '0_$NOADJ_$NONAME_{}.png').
+    # Generate the filename template (e.g. '0_$NOADJ_{}.png').
     # NOTE: The '{}' will be replaced with the first available image number.
-    filename = f'{digit}_{name}_{adjective}_{"{}"}.{img_ext}'
+    filename = f'{digit}_{adjective}_{"{}"}.{img_ext}'
 
     # Find the next available image number.
     # NOTE: Searching like this is not scalable, but this is fine for limited numbers of files.

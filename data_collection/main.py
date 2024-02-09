@@ -56,7 +56,7 @@ CANVAS_W, CANVAS_H = 560, 560   # Size of the canvas region (in pixels).
 GRID_W, GRID_H = 28, 28         # Determines the size of the drawing canvas (in cells).
                                 # NOTE: This determines the size of any saved images (in pixels).
                                 #       The well-known MNIST dataset of handwritten digits uses 28x28 images.
-                                #       Using the same size makes it simple to compare or mix datasets.
+                                #       Using the same size makes it simple to compare datasets.
 
 SQUARE_CELLS = True             # If True, cells will always be square even when the window is not.
 
@@ -80,7 +80,7 @@ RANDOM_BRUSH_SCALE = True       # If True, brush scale will be randomly selected
 TEXT_FONT = 'freesansbold.ttf'  # Name of text font.
 TEXT_ALPHA = 255                # Transparency value of text from 0 to 255.
 TEXT_SIZE = 24                  # Font size.
-PROMPT_TEXT_SIZE = 36           # Font size of prompt text.
+PROMPT_TEXT_SIZE = 42           # Font size of prompt text.
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -321,9 +321,12 @@ def draw_state(surf: pg.Surface, canvas: np.ndarray, brush_size: int):
     # Draws brush as a circle around the mouse.
     pg.draw.circle(surf, (255, 0, 0), pg.mouse.get_pos(), brush_size, 1)
 
-# Unused function. This is an example of how to write 'shorter' code, and why it is not always a good thing.
-def draw_state_but_shorter(surf: pg.Surface, canvas: np.ndarray):
-    """ This is a much 'shorter' version of the draw_state function above. (minus the brush)
+
+# Unused function.
+# This is an example of how to write 'shorter' code.
+# Why it is not always better to do this?
+def draw_state_but_shorter(surf: pg.Surface, canvas: np.ndarray, brush_size: int):
+    """ This is a more compact version of the draw_state function above.
             What is one reason to write code like this?
             What is one reason NOT to write code like this?
     
@@ -340,6 +343,9 @@ def draw_state_but_shorter(surf: pg.Surface, canvas: np.ndarray):
                        ORIGIN_Y + CELL_H * (i % canvas.shape[1]) + BORDER_PX,
                        CELL_W - BORDER_PX*2,
                        CELL_H - BORDER_PX*2)))
+        
+    # Draws brush as a circle around the mouse.
+    pg.draw.circle(surf, (255, 0, 0), pg.mouse.get_pos(), brush_size, 1)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -408,6 +414,8 @@ def draw_text(surf, text, pos, font, color, alpha):
 
 
 def draw_text_w_outline(surf, text, pos, font, color, alpha, outline_color, outline_alpha):
+    """ Draws outlined text by rendering the text multiple times with an offset.
+    """
     for x_offset in [-2, 2]:
         for y_offset in [-2, 2]:
             draw_text(surf, text, (pos[0]+x_offset, pos[1]+y_offset), font, outline_color, outline_alpha)

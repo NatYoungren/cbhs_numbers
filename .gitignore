@@ -1,0 +1,8 @@
+saved_digits/**
+ml_training/mnist_test_imgs/**
+ml_training/mnist_train_imgs/**
+**.pt
+**.pyc
+**.png
+**.jpg
+**.csv

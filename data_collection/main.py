@@ -346,69 +346,47 @@ def draw_state_but_shorter(surf: pg.Surface, canvas: np.ndarray):
 #                     # TEXT DISPLAY: #                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-def draw_upper_text(surf: pg.Surface, font: pg.font, prompt_font: pg.font, name:str, prompt: str):
-    # Upper Instructions:
-    #   Current prompt
-    #   Name change controls
+def draw_upper_text(surf: pg.Surface, font: pg.font, prompt: str):
+    """ Draw prompt text to the upper text region.
 
-    text_x = UPPER_TEXT_POS[0]
-        
-    text_y = UPPER_TEXT_POS[1]-PROMPT_TEXT_SIZE/2
-    draw_text_w_outline(surf, prompt, (text_x, text_y), prompt_font, TEXT_COLOR, TEXT_ALPHA, (0, 0, 0), TEXT_ALPHA)
-
-    if ENABLE_NAMES:
-        control_text = f'ENTER: Set Your Name!' 
-        
-        if len(name) > 0: # If there is currently a name, display it.
-            text_y = UPPER_TEXT_POS[1]+TEXT_SIZE/2
-            draw_text(surf, f'Name: {name}', (text_x, text_y), font, TEXT_COLOR, TEXT_ALPHA)
-            control_text = f'ENTER: Change Your Name' # NOTE: Overrides the control text if a name is set.
-        
-        text_y = UPPER_TEXT_POS[1]+TEXT_SIZE/2*3
-        draw_text(surf, control_text, (text_x, text_y), font, TEXT_COLOR, TEXT_ALPHA)
+    Args:
+        surf (pg.Surface): Surface to draw to (presumably the screen).
+        font (pg.font): Pygame font with text sizing/styling.
+        prompt (str): Text to display.
+    """
+    draw_text_w_outline(surf=surf,
+                        text=prompt,
+                        pos=(UPPER_TEXT_POS[0], UPPER_TEXT_POS[1]),
+                        font=font, color=TEXT_COLOR, alpha=TEXT_ALPHA,
+                        outline_color=(0, 0, 0), outline_alpha=TEXT_ALPHA)
 
 
 def draw_lower_text(surf: pg.Surface, font: pg.font):
-    # Lower Controls:
-    #   Left click
-    #   Right click
-    #   Space
-    #   R
+    """ Draw instructional text to the lower text region.
 
-    text_x = LOWER_TEXT_POS[0]
-    control_text = 'Left Click: Draw'
-
-    text_y = LOWER_TEXT_POS[1]-TEXT_SIZE/2*3
-    draw_text(surf, control_text, (text_x, text_y), font, TEXT_COLOR, TEXT_ALPHA)
+    Args:
+        surf (pg.Surface): Surface to draw to (presumably the screen).
+        font (pg.font): Pygame font with text sizing/styling.
+    """
+    draw_text(surf=surf,
+              text='Left Click: Draw',
+              pos=(LOWER_TEXT_POS[0], LOWER_TEXT_POS[1]-TEXT_SIZE/2*3),
+              font=font, color=TEXT_COLOR, alpha=TEXT_ALPHA)
     
-    control_text = 'Right Click: Erase'
-    text_y = LOWER_TEXT_POS[1]-TEXT_SIZE/2
-    draw_text(surf, control_text, (text_x, text_y), font, TEXT_COLOR, TEXT_ALPHA)
+    draw_text(surf=surf,
+              text='Right Click: Erase',
+              pos=(LOWER_TEXT_POS[0], LOWER_TEXT_POS[1]-TEXT_SIZE/2),
+              font=font, color=TEXT_COLOR, alpha=TEXT_ALPHA)
     
-    control_text = 'SPACE: Next Digit'
-    text_y = LOWER_TEXT_POS[1]+TEXT_SIZE/2
-    draw_text(surf, control_text, (text_x, text_y), font, TEXT_COLOR, TEXT_ALPHA)
+    draw_text(surf=surf,
+              text='SPACE: Next Digit',
+              pos=(LOWER_TEXT_POS[0], LOWER_TEXT_POS[1]+TEXT_SIZE/2),
+              font=font, color=TEXT_COLOR, alpha=TEXT_ALPHA)    
     
-    control_text = 'R: Reset'
-    text_y = LOWER_TEXT_POS[1]+TEXT_SIZE/2*3
-    draw_text(surf, control_text, (text_x, text_y), font, TEXT_COLOR, TEXT_ALPHA)
-
-
-def draw_name_prompt(surf: pg.Surface, font: pg.font, prompt_font: pg.font, name: str):
-    surf.fill(BG_COLOR) # Used for grid lines between cells and empty border space.
-    text_x = SCREEN_CENTER[0]
-    text_y = SCREEN_CENTER[1]-PROMPT_TEXT_SIZE/2*3
-    draw_text_w_outline(surf, f'Type Your Name:',  (text_x, text_y), prompt_font, TEXT_COLOR, TEXT_ALPHA, (0, 0, 0), TEXT_ALPHA)
-    
-    text_y = SCREEN_CENTER[1]-PROMPT_TEXT_SIZE/2
-    
-    postfix = '_' if len(name) < NAME_LENGTH_LIMIT and time.time() % 1 > 0.5 else '  '
-    draw_text_w_outline(surf, f'{name}{postfix}',  (text_x, text_y), prompt_font, TEXT_COLOR, TEXT_ALPHA, (0, 0, 0), TEXT_ALPHA)
-
-    
-    control_text = f'ENTER: Continue'
-    text_y = SCREEN_CENTER[1]+TEXT_SIZE/2*3
-    draw_text(surf, control_text, (text_x, text_y), font, TEXT_COLOR, TEXT_ALPHA)
+    draw_text(surf=surf,
+              text='R: Reset',
+              pos=(LOWER_TEXT_POS[0], LOWER_TEXT_POS[1]+TEXT_SIZE/2*3),
+              font=font, color=TEXT_COLOR, alpha=TEXT_ALPHA)
 
 
 def draw_text(surf, text, pos, font, color, alpha):

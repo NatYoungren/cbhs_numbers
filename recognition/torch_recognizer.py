@@ -129,7 +129,6 @@ class Digit_OCR_CNN4(nn.Module):
 
         return x
 
-
 class Digit_OCR_CNN5(nn.Module):
 
     def __init__(self):
@@ -190,7 +189,7 @@ def load_model4(weights_path: str = 'digit_mnist_model4.pt'):
     net4.load_state_dict(torch.load(weights_path))
     return net4
 
-def load_model5(weights_path: str = 'digit_mnist_model5.pt'):
+def load_model5(weights_path: str = 'digit_mnist_model5.pt'): # Also used for model6
     net5 = Digit_OCR_CNN4()
     net5.eval()
     net5.to(device)
@@ -214,6 +213,35 @@ def evaluate(net, img, verbose=False):
         print(f'Predicted: {predicted}')
 
     return predicted.item()
+
+def multi_evaluate(net, img, verbose=False):
+    
+    guesses = np.zeros(10)
+    raw_guesses = np.zeros(10)
+    
+    ax1sums = np.sum(img, axis=0)
+    up_shift = np.argmax(ax1sums>0)
+    down_shift = np.argmax(ax1sums[::-1]>0)
+    
+    ax2sums = np.sum(img, axis=1)
+    left_shift = np.argmax(ax2sums>0)
+    right_shift = np.argmax(ax2sums[::-1]>0)
+
+    for x in range(-left_shift, right_shift+1):
+        for y in range(-up_shift, down_shift+1):
+            shifted_img = np.roll(img, (x, y), axis=(0,1))
+            
+            tensor = transform(shifted_img).to(device)
+            with torch.no_grad():
+                output = net(tensor)
+                _, predicted = torch.max(output.data, 1)
+                
+                guesses[predicted] += 1
+                raw_guesses += output.data.numpy().flatten()
+    if verbose:       
+        print(guesses)
+        print(raw_guesses)
+    return np.argmax(guesses)
 
 def view(img):
     img = img.T.copy(order='C')

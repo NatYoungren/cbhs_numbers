@@ -414,21 +414,16 @@ def draw_text_w_outline(surf, text, pos, font, color, alpha, outline_color, outl
     draw_text(surf, text, pos, font, color, alpha)
 
 
-def construct_prompt(digit: str='~', adjective: str='', name: str=''):
+def construct_prompt(digit: str='~', adjective: str=''):
     """ Construct an instruction prompt string.
 
     Args:
-        digit (str): Digit to draw.
-        adjective (str): Adjective to use in prompt.
-        name (str): Name to use in prompt.
+        digit (str, optional): Digit to draw. Defaults to '~' placeholder.
+        adjective (str, optional): Adjective to use in prompt. Defaults to ''.
 
     Returns:
-        str: Prompt containing digit, adj, and possibly name..
+        str: Prompt containing digit and adj (adj may be blank).
     """
-    
-    # if len(name) > 0:
-    #     prompt = f'{name}, draw a{adjective} number {digit}!'
-    # else:
     prompt = f'Draw a{adjective} number {digit}!'
     return prompt
 

@@ -134,34 +134,27 @@ def main():
     pg.font.init()
     font = pg.font.Font(TEXT_FONT, TEXT_SIZE)
     prompt_font = pg.font.Font(TEXT_FONT, PROMPT_TEXT_SIZE)
-
-    # Generate a list of rectangles, one for each cell in the grid.
-    # Each rectangle is a tuple of (x, y, width, height).
-    cell_rects = generate_rects(origin=(ORIGIN_X, ORIGIN_Y),
-                                cell_shape=(CELL_W, CELL_H),
-                                grid_shape=(GRID_W, GRID_H))
-
-    brush_size = generate_brush_size()  # Generate brush size (in pixels).
     
     digit = ff.get_digit()          # Digit to use in prompt.
     adjective = ff.get_adjective()  # Adjective to use in prompt.
     
-    canvas = None               # 2D Numpy array holding the state of each cell, 0 for empty, 1 for drawn.
-                                # NOTE: This is where the current drawing is stored.
-                                #       We will reset this to a blank array whenever we begin a drawing.
+    canvas = Canvas(GRID_W, GRID_H) # Create a canvas object (see canvas.py).
     
-    finished_drawing = False    # Flag to move on to the next drawing.
-    
-    running = True              # Flag to continue running the program.
-    reset_canvas = True         # Flag to reset the canvas.
-                                # NOTE: This starts as True, as we want to reset the canvas on the first frame.
+    running = True                  # Flag to continue running the program.
+    save_drawing = False            # Flag to move on to the next drawing.
 
     # Main loop.
     while running:
         
         # If flagged, save the current canvas, select a new digit, trigger a canvas reset.
-        if finished_drawing:
+        if save_drawing:
             # If the canvas is all blank or all drawn, don't save it.
+            if canvas.pixels.any() and not canvas.pixels.all():
+                ff.save_canvas(canvas.pixels, digit=digit, adjective=adjective)
+                canvas.reset()                  # Reset the canvas.
+                canvas.set_brush_radius()       # Randomize the brush radius.
+                digit = ff.get_digit()          # Get a new digit.
+                adjective = ff.get_adjective()  # Get a new adjective.
                 
         # Handle keypress events (quitting, resetting, saving)
         running, save_drawing = parse_key_input(canvas) # NOTE: These flags will be handled every loop.

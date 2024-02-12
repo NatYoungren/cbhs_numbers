@@ -7,12 +7,8 @@ import math
 import numpy as np
 import pygame as pg
 
+from canvas import Canvas
 import file_functions as ff
-
-# TODO: Move into helper_functions.py or remove completely.
-# # All non-main code is in helper_functions.py
-# # This is to keep the main.py file clean and readable.
-# import helper_functions as hf
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

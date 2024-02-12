@@ -40,19 +40,18 @@ import file_functions as ff
 
 # ESC -> Quit
 
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                      # SETTINGS: #                      #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # TEXT REGION CONSTANTS
-ENABLE_TEXT = True              # If True, text-input regions will be added to the top and bottom of the window.
-TEXT_REGION_H = 100             # Height of the text-input region (in pixels).
+ENABLE_TEXT = True              # If True, text regions will be added to the top and bottom of the window.
+TEXT_REGION_H = 100             # Height of each text region (in pixels).
 
 # CANVAS CONSTANTS
 CANVAS_W, CANVAS_H = 560, 560   # Size of the canvas region (in pixels).
                                 # NOTE: Height of the pygame window is CANVAS_H + TEXT_REGION_H*2.
-                                
+       
 GRID_W, GRID_H = 28, 28         # Determines the size of the drawing canvas (in cells).
                                 # NOTE: This determines the size of any saved images (in pixels).
                                 #       The well-known MNIST dataset of handwritten digits uses 28x28 images.
@@ -67,14 +66,10 @@ BORDER_PX = 1                   # Width of the border around each cell (in pixel
 # COLOR CONSTANTS
 TEXT_COLOR = (255, 255, 255)    # Color of text (R, G, B).
 CANVAS_COLOR = (0, 0, 0)        # Color of un-drawn cells (R, G, B).
-BRUSH_COLOR = (240, 240, 240)   # Color of drawn cells (R, G, B).
+DRAWN_COLOR = (240, 240, 240)   # Color of drawn cells (R, G, B).
+BRUSH_COLOR = (255, 0, 0)       # Color of the brush indicator (R, G, B).
 BG_COLOR = (25, 75, 25)         # Color of the background (R, G, B).
                                 # NOTE: Seen in the border between cells and any empty space around the grid.
-
-# BRUSH CONSTANTS
-BRUSH_SCALE = 1.25              # Radius of the brush (in cells).
-BRUSH_SCALE_RANGE = [0.5, 1.2]  # Range of possible brush scales (in cells).
-RANDOM_BRUSH_SCALE = True       # If True, brush scale will be randomly selected from BRUSH_SCALE_RANGE.
 
 # TEXT CONSTANTS
 TEXT_FONT = 'freesansbold.ttf'  # Name of text font.
@@ -109,7 +104,7 @@ if SQUARE_CELLS:
     CELL_W = CELL_H = min(CELL_W, CELL_H)           # If SQUARE_CELLS, set cell size to be the same in both dimensions.
 
 ORIGIN_X = (CANVAS_W - CELL_W * GRID_W) / 2         # Calculate the origin of the canvas (top left corner of the top left cell).
-ORIGIN_Y = (CANVAS_H - CELL_H * GRID_H) / 2         # NOTE: We use this to center the canvas regardless of screen shape.
+ORIGIN_Y = (CANVAS_H - CELL_H * GRID_H) / 2         # NOTE: We use these to center the canvas regardless of screen shape.
 
 ORIGIN_Y += TEXT_REGION_H                           # Offset the canvas vertically by the height of the upper text region.
 

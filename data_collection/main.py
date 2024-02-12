@@ -162,28 +162,14 @@ def main():
         # If flagged, save the current canvas, select a new digit, trigger a canvas reset.
         if finished_drawing:
             # If the canvas is all blank or all drawn, don't save it.
-            if canvas.any() and not canvas.all():
-                ff.save_canvas(canvas, digit=digit, adjective=adjective)
-                digit = ff.get_digit()              # Get a new digit.
-                adjective = ff.get_adjective()      # Get a new adjective.
-                brush_size = generate_brush_size()  # Get a new brush size (if RANDOM_BRUSH_SCALE is True).
-                reset_canvas = True                 # Set a flag to reset the canvas.
+                
+        # Handle keypress events (quitting, resetting, saving)
+        running, save_drawing = parse_key_input(canvas) # NOTE: These flags will be handled every loop.
+                                                        # If running = False, the program will exit after this loop.
+                                                        # If save_drawing = True, the image will be saved and the canvas reset.
         
-        # If flagged, reset the canvas.
-        if reset_canvas:
-            canvas = np.zeros((GRID_W, GRID_H), dtype=int)  # Set all cells to 0 (empty).
-            reset_canvas = False                            # Flag has been resolved, reset it.
-        
-        # Handle input events.
-        (running, reset_canvas, finished_drawing) = parse_events(canvas, cell_rects, brush_size)
-        # NOTE: These flags must be resolved before the next set of events is parsed.
-        #   If running = False, the program will exit after this loop finishes.
-        #   If reset_canvas = True, the canvas will be reset at the beginning of the next loop.
-        #   If finished_drawing = True, the image will be saved and the canvas reset with a new digit at the start of the next loop.
-        
-        
-        # Redraw the current state of the canvas
-        draw_state(screen, canvas, brush_size)
+        # Handle mouse events (drawing and erasing).
+        parse_mouse_input(canvas)
         if ENABLE_TEXT:
             draw_upper_text(screen, prompt_font, construct_prompt(digit, adjective))
             draw_lower_text(screen, font)
@@ -200,24 +186,19 @@ def main():
 #                   # EVENT HANDLING: #                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-def parse_events(canvas: np.ndarray, rects: np.ndarray, brush_size: int, allow_drawing: bool=True):
-    """ Handle pygame events.
-            Keypresses generally change the program state.
-            Mouse buttons generally effect the drawing state.
+def parse_key_input(canvas: Canvas): # TODO: DOCUMENT
+    """ Handle pygame keyboard/window events.
+            Events can trigger quit, reset, and save functionality.
     
     Args:
-        canvas (np.ndarray(int)): 2D Numpy array holding the state of each canvas cell, 0 for empty, 1 for drawn.
-        rects (np.ndarray(int)): 2D Numpy array holding the pixel corrdinates of each canvas cell, (x, y, w, h).
-        brush_size (int): Radius of the brush in pixels.
-        allow_drawing (bool, optional): If True, allow drawing with the mouse. Defaults to True.
+        canvas (canvas.Canvas): 2D Numpy array holding the state of each canvas cell, 0 for empty, 1 for drawn.
     """
     
     # These are the default values we will return each frame unless an event changes them.
     running = True              # By default, keep running the program.
-    reset_canvas = False        # By default, do not reset the canvas.
-    finished_drawing = False    # By default, do not move on to the next drawing.
+    finished_drawing = False    # By default, do not save and move on to the next drawing.
     
-    # Handle input events.
+    # Handle pygame events.
     for event in pg.event.get():
 
         # Handle keypresses
@@ -231,7 +212,7 @@ def parse_events(canvas: np.ndarray, rects: np.ndarray, brush_size: int, allow_d
             # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
             # R key resets the current canvas.
             elif event.key == pg.K_r:
-                reset_canvas = True
+                canvas.reset()
             
             # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
             # Spacebar moves on to the next drawing.
@@ -241,41 +222,35 @@ def parse_events(canvas: np.ndarray, rects: np.ndarray, brush_size: int, allow_d
         # Handle quit event (Control-Q or clicking the X on the window).
         elif event.type == pg.QUIT:
             running = False
-    
-    # If drawing is allowed, handle mouse events.
-    if allow_drawing:
-        
-        # Find out which mouse buttons are currently held down.
-        held_mouse_buttons = pg.mouse.get_pressed() # NOTE: held_mouse_buttons is a tuple of 3 booleans:
-                                                    #   held_mouse_buttons[0] is left click.
-                                                    #   held_mouse_buttons[1] is middle click.
-                                                    #   held_mouse_buttons[2] is right click.
-        
-        # If any mouse buttons are held down...
-        if any(held_mouse_buttons):
             
-            # Get a list of all cells that are within BRUSH_SIZE pixels of the mouse position.
-            brushed_cells = get_brushed_cells(pg.mouse.get_pos(), rects, brush_size)
-            
-            # We can use the state of the left mouse button as the state of our 'brush'.
-            brush_state = held_mouse_buttons[0]
-            
-            # Set all brushed cells to match the state of the brush.
-            for clicked_cell in brushed_cells:
-                canvas[clicked_cell[0], clicked_cell[1]] = brush_state
-                
-            # NOTE: This is a neat trick to avoid an if statement. ^^
-            #       This works because we already know that at least one mouse button is being held down.
-            
-            #       The state of the left mouse button ( held_mouse_buttons[0] ) is either True or False (0 or 1).
-            
-            #       If the left button is held, brush_state = True, and we set all brushed cells to 1.  (drawing)
-                        
-            #       If left mouse button is NOT held, that means the right or middle buttons must be.
-            #       In this situation, brush_state = False, and we set all brushed cells to 0. (erasing)
-            
-    return running, reset_canvas, finished_drawing
+    return running, finished_drawing
 
+
+def parse_mouse_input(canvas: np.ndarray): # TODO: DOCUMENT
+    """ Handle pygame mouse inputs.
+            Mouse can affect canvas tiles.
+    
+    Args:
+        canvas (canvas.Canvas): 2D Numpy array holding the state of each canvas cell, 0 for empty, 1 for drawn.
+    """
+    
+    # Find out which mouse buttons are currently held down.
+    held_mouse_buttons = pg.mouse.get_pressed() # NOTE: held_mouse_buttons is a tuple of 3 booleans:
+                                                #   held_mouse_buttons[0] is left click.
+                                                #   held_mouse_buttons[1] is middle click.
+                                                #   held_mouse_buttons[2] is right click.
+    
+    if any(held_mouse_buttons):
+        mouse_pos = pg.mouse.get_pos()                  # Get the current mouse position.
+        mouse_x = (mouse_pos[0] - ORIGIN_X) / CELL_W    # Convert pixel coords to cell coords.
+        mouse_y = (mouse_pos[1] - ORIGIN_Y) / CELL_H    #
+        color = held_mouse_buttons[0]                   # If m1 is held, color is 1, else 0.
+        
+        canvas.draw(pos = (mouse_x, mouse_y), color = color)
+        
+    else:
+        # If no mouse buttons are held down, reset the previous brush position.
+        canvas.prev_brush_pos = None
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                  # SCREEN UPDATING: #                   #

@@ -170,11 +170,17 @@ def main():
         
         # Handle mouse events (drawing and erasing).
         parse_mouse_input(canvas)
+
+        # Redraw the current state of the canvas.
+        draw_canvas(screen, canvas)
+        
+        # Draw text to the screen.
         if ENABLE_TEXT:
             draw_upper_text(screen, prompt_font, construct_prompt(digit, adjective))
             draw_lower_text(screen, font)
+            
+        # If we are not drawing text to the screen, put the prompt in the window title.
         else:
-            # If we are not drawing text to the screen, put the prompt in the window title.
             pg.display.set_caption(construct_prompt(digit, adjective))
 
         # Update the screen
@@ -256,7 +262,7 @@ def parse_mouse_input(canvas: np.ndarray): # TODO: DOCUMENT
 #                  # SCREEN UPDATING: #                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-def draw_state(surf: pg.Surface, canvas: np.ndarray, brush_size: int):
+def draw_canvas(surf: pg.Surface, canvas: Canvas):
     """ Draw the current canvas onto the pygame window.
         Each cell is shown as a colored rectangle.
 
@@ -282,10 +288,10 @@ def draw_state(surf: pg.Surface, canvas: np.ndarray, brush_size: int):
             rect_vars = (x, y, width, height)   # Arrange the rectangle variables into a tuple.
                                                 # NOTE: This format is what pygame.draw.rect() expects.
             
-            cell_state = canvas[w, h]           # Get the state of the current cell.
+            cell_state = canvas.pixels[w, h]    # Get the state of the current cell.
                                                 # NOTE: 0 for empty, 1 for drawn.
 
-            color = [CANVAS_COLOR, BRUSH_COLOR][cell_state] # Set the color based on the cell state.
+            color = [CANVAS_COLOR, DRAWN_COLOR][cell_state] # Set the color based on the cell state.
                                                             # NOTE: This is a neat trick to avoid an if statement.
                                                             #       We can use the state of the cell as an index,
                                                             #       an index of 0 gives us CANVAS_COLOR
@@ -294,7 +300,7 @@ def draw_state(surf: pg.Surface, canvas: np.ndarray, brush_size: int):
             pg.draw.rect(surf, color, rect_vars) # Draw the rectangle.
             
     # Draws brush as a circle around the mouse.
-    pg.draw.circle(surf, (255, 0, 0), pg.mouse.get_pos(), brush_size, 1)
+    pg.draw.circle(surf, BRUSH_COLOR, pg.mouse.get_pos(), canvas.brush_radius * min(CELL_W, CELL_H), 1)
 
 
 # Unused function.

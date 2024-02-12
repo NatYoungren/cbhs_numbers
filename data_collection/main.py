@@ -65,7 +65,7 @@ CANVAS_COLOR = (0, 0, 0)        # Color of un-drawn cells (R, G, B).
 DRAWN_COLOR = (240, 240, 240)   # Color of drawn cells (R, G, B).
 BRUSH_COLOR = (255, 0, 0)       # Color of the brush indicator (R, G, B).
 BG_COLOR = (25, 75, 25)         # Color of the background (R, G, B).
-                                # NOTE: Seen in the border between cells and any empty space around the grid.
+                                # NOTE: Seen in the border between cells and empty space around the canvas.
 
 # TEXT CONSTANTS
 TEXT_FONT = 'freesansbold.ttf'  # Name of text font.
@@ -94,7 +94,7 @@ LOWER_TEXT_REGION = pg.Rect(0,                      # Region where instructional
                             TEXT_REGION_H)
 
 CELL_W = CANVAS_W / GRID_W                          # Size of each canvas cell (in pixels).
-CELL_H = CANVAS_H / GRID_H
+CELL_H = CANVAS_H / GRID_H                          #
 
 if SQUARE_CELLS:
     CELL_W = CELL_H = min(CELL_W, CELL_H)           # If SQUARE_CELLS, set cell size to be the same in both dimensions.
@@ -129,7 +129,7 @@ def main():
     digit = ff.get_digit()          # Digit to use in prompt.
     adjective = ff.get_adjective()  # Adjective to use in prompt.
     
-    canvas = Canvas(GRID_W, GRID_H) # Create a canvas object (see canvas.py).
+    canvas = Canvas(GRID_W, GRID_H) # Initialize a canvas object (see canvas.py).
     
     running = True                  # Flag to continue running the program.
     save_drawing = False            # Flag to move on to the next drawing.
@@ -156,7 +156,7 @@ def main():
         parse_mouse_input(canvas)
 
         # Redraw the current state of the canvas.
-        draw_canvas(screen, canvas)
+        draw_canvas_but_shorter(screen, canvas)
         
         # Draw text to the screen.
         if ENABLE_TEXT:
@@ -181,7 +181,7 @@ def parse_key_input(canvas: Canvas): # TODO: DOCUMENT
             Events can trigger quit, reset, and save functionality.
     
     Args:
-        canvas (canvas.Canvas): 2D Numpy array holding the state of each canvas cell, 0 for empty, 1 for drawn.
+        canvas (Canvas): Canvas object containing current state of the drawing.
     """
     
     # These are the default values we will return each frame unless an event changes them.
@@ -221,7 +221,7 @@ def parse_mouse_input(canvas: np.ndarray): # TODO: DOCUMENT
             Mouse can affect canvas tiles.
     
     Args:
-        canvas (canvas.Canvas): 2D Numpy array holding the state of each canvas cell, 0 for empty, 1 for drawn.
+        canvas (Canvas):  Canvas object containing current state of the drawing.
     """
     
     # Find out which mouse buttons are currently held down.
@@ -252,7 +252,7 @@ def draw_canvas(surf: pg.Surface, canvas: Canvas):
 
     Args:
         surf (pygame.Surface): Surface to draw to (presumably the screen).
-        canvas (np.ndarray(int)): 2D Numpy array holding the state of each cell, 0 for empty, 1 for drawn.
+        canvas (Canvas): Canvas object containing current state of the drawing.
     """
     surf.fill(BG_COLOR) # Used for grid lines between cells and empty border space.
     
@@ -283,34 +283,33 @@ def draw_canvas(surf: pg.Surface, canvas: Canvas):
             
             pg.draw.rect(surf, color, rect_vars) # Draw the rectangle.
             
-    # Draws brush as a circle around the mouse.
+    # Draw brush as a circle around the mouse.
     pg.draw.circle(surf, BRUSH_COLOR, pg.mouse.get_pos(), canvas.brush_radius * min(CELL_W, CELL_H), 1)
 
 
 # Unused function.
 # This is an example of how to write 'shorter' code.
-# Why it is not always better to do this?
-def draw_state_but_shorter(surf: pg.Surface, canvas: np.ndarray, brush_size: int):
-    """ This is a more compact version of the draw_state function above.
+def draw_canvas_but_shorter(surf: pg.Surface, canvas: Canvas):
+    """ This is a more compact version of the draw_canvas function above.
             What is one reason to write code like this?
             What is one reason NOT to write code like this?
     
     Args:
         surf (pygame.Surface): Surface to draw to (presumably the screen).
-        canvas (np.ndarray(int)): 2D Numpy array holding the state of each cell, 0 for empty, 1 for drawn.
+        canvas (Canvas): Canvas object containing current state of the drawing.
     """
     surf.fill(BG_COLOR) # Used for grid lines between cells and empty border space.
-    for i, c in enumerate(canvas.flatten()):
+    for i, c in enumerate(canvas.pixels.flatten()):
         # Draw each cell as a rectangle, colored for active/inactive.
         pg.draw.rect(surf,
-                     [CANVAS_COLOR, BRUSH_COLOR][c],
-                     ((ORIGIN_X + CELL_W * (i//canvas.shape[0]) + BORDER_PX,
-                       ORIGIN_Y + CELL_H * (i % canvas.shape[1]) + BORDER_PX,
-                       CELL_W - BORDER_PX*2,
-                       CELL_H - BORDER_PX*2)))
+                     [CANVAS_COLOR, DRAWN_COLOR][c],
+                     ((ORIGIN_X + CELL_W * (i // canvas.width) + BORDER_PX,
+                       ORIGIN_Y + CELL_H * (i % canvas.height) + BORDER_PX,
+                       CELL_W - BORDER_PX * 2,
+                       CELL_H - BORDER_PX * 2)))
         
-    # Draws brush as a circle around the mouse.
-    pg.draw.circle(surf, (255, 0, 0), pg.mouse.get_pos(), brush_size, 1)
+    # Draw brush as a circle around the mouse.
+    pg.draw.circle(surf, BRUSH_COLOR, pg.mouse.get_pos(), canvas.brush_radius * min(CELL_W, CELL_H), 1)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

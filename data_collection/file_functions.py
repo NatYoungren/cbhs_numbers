@@ -43,29 +43,6 @@ INACTIVE_CELL_COLOR = (000, 000, 000)   # Color of blank cells (R, G, B) is blac
 
 ALLOWED_CHARACTERS = ascii_letters      # Characters allowed in filename elements.
 
-# Returns a digit with the fewest images.
-def get_digit() -> str:
-    # If we haven't populated DIGIT_COUNTS yet, do so now.
-    if len(DIGIT_COUNTS) == 0:
-        populate_digit_counts()
-    
-    min_index = np.argmin(list(DIGIT_COUNTS.values()))
-    return DIGITS[min_index]
-
-# Returns a random adjective.
-# NOTE: Returns no adjective (blank string) with probability skip_chance.
-def get_adjective(skip_chance: float=0.5) -> str:
-    if np.random.random() < skip_chance:
-        return ''
-    return ADJECTIVES[np.random.randint(len(ADJECTIVES))]
-
-# Populates DIGIT_COUNTS with the number of images in each digit directory.
-def populate_digit_counts(target_dir: str=SAVE_DIR) -> None:
-    for d in DIGITS:
-        digit_dir = os.path.join(target_dir, d)
-        Path(digit_dir).mkdir(parents=True, exist_ok=True)
-        DIGIT_COUNTS[d] = len(os.listdir(digit_dir))
-
 # Saves a canvas as a png to the SAVE_DIR.
 def save_canvas(canvas: np.ndarray,
                 digit: str,
@@ -101,7 +78,32 @@ def save_canvas(canvas: np.ndarray,
     # Update DIGIT_COUNTS to reflect the new digit.
     DIGIT_COUNTS[digit] += 1
 
+# Populates DIGIT_COUNTS with the number of images in each digit directory.
+def populate_digit_counts(target_dir: str=SAVE_DIR) -> None:
+    for d in DIGITS:
+        digit_dir = os.path.join(target_dir, d)
+        Path(digit_dir).mkdir(parents=True, exist_ok=True)
+        DIGIT_COUNTS[d] = len(os.listdir(digit_dir))
 
+# Returns a digit with the fewest images.
+def get_digit() -> str:
+    # If we haven't populated DIGIT_COUNTS yet, do so now.
+    if len(DIGIT_COUNTS) == 0:
+        populate_digit_counts()
+    
+    min_index = np.argmin(list(DIGIT_COUNTS.values()))
+    return DIGITS[min_index]
+
+# Returns a random adjective.
+def get_adjective(skip_chance: float=0.5) -> str:
+    # NOTE: Returns no adjective (blank string) with a probability of skip_chance.
+    if np.random.random() < skip_chance:
+        return ''
+    return ADJECTIVES[np.random.randint(len(ADJECTIVES))]
+
+# Removes all characters not in allowed_characters from raw_string.
+def whitelist_chars(raw_string: str, allowed_characters: str) -> str:
+    return ''.join([c for c in raw_string if c in allowed_characters])
 
 # Converts a numpy array of 0s and 1s to a PIL image.
 def img_frombytes(data: np.ndarray) -> Image:
@@ -111,7 +113,3 @@ def img_frombytes(data: np.ndarray) -> Image:
     data = data.T.copy(order='C')
     databytes = np.packbits(data, axis=1)
     return Image.frombytes(mode='1', size=size, data=databytes)
-
-# Removes all characters not in allowed_characters from raw_string.
-def whitelist_chars(raw_string: str, allowed_characters: str) -> str:
-    return ''.join([c for c in raw_string if c in allowed_characters])

@@ -48,7 +48,7 @@ def save_canvas(canvas: np.ndarray,
                 digit: str,
                 adjective: str='',
                 target_dir: str=SAVE_DIR,
-                img_ext='png') -> None:
+                img_ext: str='png') -> None:
     
     # Remove all non-alphabetic characters from adjective (just in case).
     adjective = whitelist_chars(adjective.lower(), ALLOWED_CHARACTERS)
@@ -100,6 +100,11 @@ def get_adjective(skip_chance: float=0.5) -> str:
     if np.random.random() < skip_chance:
         return ''
     return ADJECTIVES[np.random.randint(len(ADJECTIVES))]
+
+# Constructs a prompt string, telling the user to draw a digit.
+def construct_prompt(digit: str='~', adjective: str=''):
+    prompt = f'Draw a{adjective} number {digit}!'
+    return prompt
 
 # Removes all characters not in allowed_characters from raw_string.
 def whitelist_chars(raw_string: str, allowed_characters: str) -> str:

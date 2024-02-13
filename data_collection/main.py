@@ -160,12 +160,12 @@ def main():
         
         # Draw text to the screen.
         if ENABLE_TEXT:
-            draw_upper_text(screen, prompt_font, construct_prompt(digit, adjective))
+            draw_upper_text(screen, prompt_font, ff.construct_prompt(digit, adjective))
             draw_lower_text(screen, font)
             
         # If we are not drawing text to the screen, put the prompt in the window title.
         else:
-            pg.display.set_caption(construct_prompt(digit, adjective))
+            pg.display.set_caption(ff.construct_prompt(digit, adjective))
 
         # Update the screen
         pg.display.flip()
@@ -384,20 +384,6 @@ def draw_text_w_outline(surf, text, pos, font, color, alpha, outline_color, outl
         for y_offset in [-2, 2]:
             draw_text(surf, text, (pos[0]+x_offset, pos[1]+y_offset), font, outline_color, outline_alpha)
     draw_text(surf, text, pos, font, color, alpha)
-
-
-def construct_prompt(digit: str='~', adjective: str=''):
-    """ Construct an instruction prompt string.
-
-    Args:
-        digit (str, optional): Digit to draw. Defaults to '~' placeholder.
-        adjective (str, optional): Adjective to use in prompt. Defaults to ''.
-
-    Returns:
-        str: Prompt containing digit and adj (adj may be blank).
-    """
-    prompt = f'Draw a{adjective} number {digit}!'
-    return prompt
 
 
 if __name__ == '__main__':

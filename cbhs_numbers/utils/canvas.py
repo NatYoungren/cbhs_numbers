@@ -18,7 +18,7 @@ class Canvas:
         self.prev_brush_pos = None                  # Stored value of the last brush position.
         self.brush_radius = None                    # Radius of the brush in cells.
         self.set_brush_radius(radius=brush_scale)   # Sets the brush radius (or randomizes it).
-        
+    
 
     def reset(self):
         """ Reset the canvas to a blank state.
@@ -93,8 +93,8 @@ class Canvas:
             for y in range(y_min, y_max):
                 if self.pixels[x, y] != color and self.check_brush_collision(cell_pos=(x, y), brush_pos=pos):
                     self.pixels[x, y] = color
-
-
+    
+    
     def check_brush_collision(self, cell_pos: tuple, brush_pos: tuple):
         """ Check if the cell is within the brush radius of the brush position.
 

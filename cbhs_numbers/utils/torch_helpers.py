@@ -10,51 +10,24 @@ import random
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
+# Structure of the model (basically the skeleton into which we load our trained weights)
 class Digit_OCR_CNN(nn.Module):
-
     def __init__(self):
         super(Digit_OCR_CNN, self).__init__()
-        # Convolutional layers learn to identify the key features of an input image.
-        self.conv1 = nn.Conv2d(1, 3, 3, padding=1)
-        self.conv2 = nn.Conv2d(3, 6, 3, padding=1)
-        # Pooling layers reduce the number of neurons.
-        self.pool = nn.MaxPool2d(2, 2)
-        # Fully connected layers classify the convolved image into a final output.
-        self.fc1 = nn.Linear(6 * 14 * 14, 128)
-        self.fc2 = nn.Linear(128, 128)
-        self.fc3 = nn.Linear(128, 10)
-        
-    def forward(self, state):
-        x = F.relu(self.conv1(state))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 6 * 14 * 14)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.log_softmax(self.fc3(x), dim=1)
-        return x
-    
-class Digit_OCR_CNN2(nn.Module):
-
-    def __init__(self):
-        super(Digit_OCR_CNN2, self).__init__()
-
-
         self.fc1 = nn.Linear(28*28, 128)
         self.drop1 = nn.Dropout(0.2)
         self.fc2 = nn.Linear(128, 128)
         self.fc3 = nn.Linear(128, 10)
         
     def forward(self, state):
-        x = state.view(-1, 28*28)
-
+        x = state.view(-1, 28 * 28)
         x = F.relu(self.fc1(x))
         x = self.drop1(x)
-
         x = F.relu(self.fc2(x))
         x = F.log_softmax(self.fc3(x), dim=1)
-
         return x
 
+# Loads the weights into an instance of the model class
 def load_model(weights_path: str = 'digit_mnist_model.pt', relative=True):
     if relative:
         weights_path = os.path.join(os.path.dirname(__file__), weights_path)
@@ -64,16 +37,7 @@ def load_model(weights_path: str = 'digit_mnist_model.pt', relative=True):
     net.load_state_dict(torch.load(weights_path))
     return net
 
-def load_model2(weights_path: str = 'digit_mnist_model.pt', relative=True):
-    if relative:
-        weights_path = os.path.join(os.path.dirname(__file__), weights_path)
-    net = Digit_OCR_CNN2()
-    net.eval()
-    net.to(device)
-    net.load_state_dict(torch.load(weights_path))
-    return net
-
-
+# Transform the image (np array) into the correct format for the model
 def transform(img):
     out_img = img.T.copy(order='C')
     out_img = torch.tensor(out_img)
@@ -81,12 +45,13 @@ def transform(img):
     out_img = out_img.float()
     return out_img
 
+# Evaluate the image with the model and return the most confident guess
 def evaluate(net, img, verbose=False):
     tensor = transform(img).to(device)
     with torch.no_grad():
         output = net(tensor)
         _, predicted = torch.max(output.data, 1)
-        pred_prob = F.softmax(output)[0][predicted].item() # Hypothetical probability
+        pred_prob = F.softmax(output, dim=1)[0][predicted].item() # Hypothetical probability
 
     if verbose:
         print(f'Ouput: {output}')
@@ -94,6 +59,7 @@ def evaluate(net, img, verbose=False):
 
     return predicted.item(), pred_prob
 
+# Evaluate the image in all possible alignments and return the most common guess (SLOW)
 def multi_evaluate(net, img, verbose=False):
     
     guesses = np.zeros(10)
@@ -125,6 +91,7 @@ def multi_evaluate(net, img, verbose=False):
         
     return np.argmax(guesses)
 
+# Randomly align the image and return the result
 def random_alignment(img):
     ax1sums = np.sum(img, axis=0)
     up_shift = np.argmax(ax1sums>0)
@@ -139,6 +106,7 @@ def random_alignment(img):
     
     return np.roll(img, (random_x, random_y), axis=(0, 1))
 
+# Display the image in a window (for debugging)
 def view(img):
     img = img.T.copy(order='C')
 

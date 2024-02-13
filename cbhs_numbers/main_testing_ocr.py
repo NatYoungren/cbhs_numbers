@@ -2,13 +2,11 @@
 # Nathaniel Alden Homans Youngren
 # December 6, 2023
 
-import math
-import numpy as np
 import pygame as pg
 
-import random
 from utils.canvas import Canvas
 import utils.torch_helpers as th
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                   # INSTRUCTIONS: #                     #
@@ -131,7 +129,7 @@ def main():
     canvas = Canvas(GRID_W, GRID_H) # Initialize a canvas object (see canvas.py).
 
     running = True              # Flag to continue running the program.
-
+    canvas_changed = False      # Flag to make new OCR predictions.
     # Main loop.
     while running:        
 
@@ -139,7 +137,8 @@ def main():
         (running, canvas_changed) = parse_key_input(canvas)
         # NOTE: These flags must be resolved before the next set of events is parsed.
         #   If running = False, the program will exit after this loop finishes.
-        
+        #   If canvas_changed = True, the program will update the prediction text.
+
         # Handle mouse events (drawing and erasing).
         canvas_changed = parse_mouse_input(canvas) or canvas_changed
 
@@ -148,8 +147,11 @@ def main():
         
         # Draw text to the screen.
         if ENABLE_TEXT:
+            # If canvas is empty or full, reset all predictions.
             if not canvas.pixels.any() or canvas.pixels.all():
                 ocr_dict = {model:('~', 0) for model in ocr_dict.keys()}
+            
+            # If canvas has changed, update predictions.
             elif canvas_changed:
                 ocr_dict = {model:th.evaluate(model, canvas.pixels) for model in ocr_dict.keys()}
 
@@ -320,10 +322,11 @@ def draw_upper_text(surf: pg.Surface, font: pg.font, digit_guess: str):
         font (pg.font): Pygame font with text sizing/styling.
         prompt (str): Text to display.
     """
-    text_x = UPPER_TEXT_POS[0]
-        
-    text_y = UPPER_TEXT_POS[1]-PROMPT_TEXT_SIZE/2
-    draw_text_w_outline(surf, digit_guess, (text_x, text_y), font, TEXT_COLOR, TEXT_ALPHA, (0, 0, 0), TEXT_ALPHA)
+    draw_text_w_outline(surf=surf,
+                        text=digit_guess,
+                        pos=(UPPER_TEXT_POS[0], UPPER_TEXT_POS[1]),
+                        font=font, color=TEXT_COLOR, alpha=TEXT_ALPHA,
+                        outline_color=(0, 0, 0), outline_alpha=TEXT_ALPHA)
 
 
 def draw_lower_text(surf: pg.Surface, font: pg.font):
@@ -333,19 +336,25 @@ def draw_lower_text(surf: pg.Surface, font: pg.font):
         surf (pg.Surface): Surface to draw to (presumably the screen).
         font (pg.font): Pygame font with text sizing/styling.
     """
-    text_x = LOWER_TEXT_POS[0]
-    control_text = 'Left Click: Draw'
-
-    text_y = LOWER_TEXT_POS[1]-TEXT_SIZE/2*3
-    draw_text(surf, control_text, (text_x, text_y), font, TEXT_COLOR, TEXT_ALPHA)
+    draw_text(surf=surf,
+              text='Left Click: Draw',
+              pos=(LOWER_TEXT_POS[0], LOWER_TEXT_POS[1]-TEXT_SIZE/2*3),
+              font=font, color=TEXT_COLOR, alpha=TEXT_ALPHA)
     
-    control_text = 'Right Click: Erase'
-    text_y = LOWER_TEXT_POS[1]-TEXT_SIZE/2
-    draw_text(surf, control_text, (text_x, text_y), font, TEXT_COLOR, TEXT_ALPHA)
+    draw_text(surf=surf,
+              text='Right Click: Erase',
+              pos=(LOWER_TEXT_POS[0], LOWER_TEXT_POS[1]-TEXT_SIZE/2),
+              font=font, color=TEXT_COLOR, alpha=TEXT_ALPHA)
     
-    control_text = 'R: Reset'
-    text_y = LOWER_TEXT_POS[1]+TEXT_SIZE/2
-    draw_text(surf, control_text, (text_x, text_y), font, TEXT_COLOR, TEXT_ALPHA)
+    draw_text(surf=surf,
+              text='SPACE: Randomly shift',
+              pos=(LOWER_TEXT_POS[0], LOWER_TEXT_POS[1]+TEXT_SIZE/2),
+              font=font, color=TEXT_COLOR, alpha=TEXT_ALPHA)    
+    
+    draw_text(surf=surf,
+              text='R: Reset',
+              pos=(LOWER_TEXT_POS[0], LOWER_TEXT_POS[1]+TEXT_SIZE/2*3),
+              font=font, color=TEXT_COLOR, alpha=TEXT_ALPHA)
 
 
 def draw_text(surf, text, pos, font, color, alpha):

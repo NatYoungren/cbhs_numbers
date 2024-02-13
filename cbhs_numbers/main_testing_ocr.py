@@ -153,7 +153,7 @@ def main():
             elif canvas_changed:
                 ocr_dict = {model:th.evaluate(model, canvas.pixels) for model in ocr_dict.keys()}
 
-            draw_upper_text(screen, prompt_font, ' - '.join([f'{pred}' for pred, _ in ocr_dict.values()]))
+            draw_upper_text(screen, prompt_font, ' - '.join([f'{pred} ({100 * prob:.2f}%)' for pred, prob in ocr_dict.values()]))
             draw_lower_text(screen, font)
             
         pg.display.flip()

@@ -2,9 +2,6 @@
 # Nathaniel Alden Homans Youngren
 # December 6, 2023
 
-import time
-import math
-import numpy as np
 import pygame as pg
 
 from canvas import Canvas
@@ -36,6 +33,7 @@ import file_functions as ff
 
 # ESC -> Quit
 
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                      # SETTINGS: #                      #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -47,7 +45,7 @@ TEXT_REGION_H = 100             # Height of each text region (in pixels).
 # CANVAS CONSTANTS
 CANVAS_W, CANVAS_H = 560, 560   # Size of the canvas region (in pixels).
                                 # NOTE: Height of the pygame window is CANVAS_H + TEXT_REGION_H*2.
-       
+
 GRID_W, GRID_H = 28, 28         # Determines the size of the drawing canvas (in cells).
                                 # NOTE: This determines the size of any saved images (in pixels).
                                 #       The well-known MNIST dataset of handwritten digits uses 28x28 images.
@@ -104,7 +102,7 @@ ORIGIN_Y = (CANVAS_H - CELL_H * GRID_H) / 2         # NOTE: We use these to cent
 
 ORIGIN_Y += TEXT_REGION_H                           # Offset the canvas vertically by the height of the upper text region.
 
-UPPER_TEXT_POS = (SCREEN_W/2, TEXT_REGION_H/2)      # To center other text, get the text regions centers (in pixels).
+UPPER_TEXT_POS = (SCREEN_W/2, TEXT_REGION_H/2)      # To center text, get the text regions centers (in pixels).
 LOWER_TEXT_POS = (SCREEN_W/2, SCREEN_H-TEXT_REGION_H/2)
 
 
@@ -126,6 +124,7 @@ def main():
     font = pg.font.Font(TEXT_FONT, TEXT_SIZE)
     prompt_font = pg.font.Font(TEXT_FONT, PROMPT_TEXT_SIZE)
     
+    # Get strings to use in the current prompt.
     digit = ff.get_digit()          # Digit to use in prompt.
     adjective = ff.get_adjective()  # Adjective to use in prompt.
     
@@ -147,7 +146,7 @@ def main():
                 digit = ff.get_digit()          # Get a new digit.
                 adjective = ff.get_adjective()  # Get a new adjective.
                 
-        # Handle keypress events (quitting, resetting, saving)
+        # Handle keypress events (quitting, resetting, saving).
         running, save_drawing = parse_key_input(canvas) # NOTE: These flags will be handled every loop.
                                                         # If running = False, the program will exit after this loop.
                                                         # If save_drawing = True, the image will be saved and the canvas reset.
@@ -176,7 +175,7 @@ def main():
 #                   # EVENT HANDLING: #                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-def parse_key_input(canvas: Canvas): # TODO: DOCUMENT
+def parse_key_input(canvas: Canvas):
     """ Handle pygame keyboard/window events.
             Events can trigger quit, reset, and save functionality.
     
@@ -216,7 +215,7 @@ def parse_key_input(canvas: Canvas): # TODO: DOCUMENT
     return running, finished_drawing
 
 
-def parse_mouse_input(canvas: np.ndarray): # TODO: DOCUMENT
+def parse_mouse_input(canvas: Canvas):
     """ Handle pygame mouse inputs.
             Mouse can affect canvas tiles.
     
@@ -224,7 +223,7 @@ def parse_mouse_input(canvas: np.ndarray): # TODO: DOCUMENT
         canvas (Canvas):  Canvas object containing current state of the drawing.
     """
     
-    # Find out which mouse buttons are currently held down.
+    # Check which mouse buttons are currently held down.
     held_mouse_buttons = pg.mouse.get_pressed() # NOTE: held_mouse_buttons is a tuple of 3 booleans:
                                                 #   held_mouse_buttons[0] is left click.
                                                 #   held_mouse_buttons[1] is middle click.
@@ -242,6 +241,7 @@ def parse_mouse_input(canvas: np.ndarray): # TODO: DOCUMENT
         # If no mouse buttons are held down, reset the previous brush position.
         canvas.prev_brush_pos = None
 
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                  # SCREEN UPDATING: #                   #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -257,8 +257,8 @@ def draw_canvas(surf: pg.Surface, canvas: Canvas):
     surf.fill(BG_COLOR) # Used for grid lines between cells and empty border space.
     
     # Width and height of each cell, minus the border on each side.
-    width  = CELL_W - BORDER_PX*2
-    height = CELL_H - BORDER_PX*2
+    width  = CELL_W - BORDER_PX * 2
+    height = CELL_H - BORDER_PX * 2
     
     # Iterate over the grid, draw a colored rectangle for each cell.
     for w in range(GRID_W):
@@ -283,7 +283,7 @@ def draw_canvas(surf: pg.Surface, canvas: Canvas):
             
             pg.draw.rect(surf, color, rect_vars) # Draw the rectangle.
             
-    # Draw brush as a circle around the mouse.
+    # Draw brush as a ring around the mouse.
     pg.draw.circle(surf, BRUSH_COLOR, pg.mouse.get_pos(), canvas.brush_radius * min(CELL_W, CELL_H), 1)
 
 
@@ -308,7 +308,7 @@ def draw_canvas_but_shorter(surf: pg.Surface, canvas: Canvas):
                        CELL_W - BORDER_PX * 2,
                        CELL_H - BORDER_PX * 2)))
         
-    # Draw brush as a circle around the mouse.
+    # Draw brush as a ring around the mouse.
     pg.draw.circle(surf, BRUSH_COLOR, pg.mouse.get_pos(), canvas.brush_radius * min(CELL_W, CELL_H), 1)
 
 

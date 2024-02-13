@@ -124,10 +124,9 @@ def main():
     prompt_font = pg.font.Font(TEXT_FONT, PROMPT_TEXT_SIZE)
 
     # Create a dict of OCR models and current predictions.
-    ocr_dict = {th.load_model('test_model1.pt'): ('~', 0),
-                th.load_model('test_model2.pt'): ('~', 0),
-                th.load_model2('best_model1.pt'): ('~', 0),
-                th.load_model2('best_model2.pt'): ('~', 0),}
+    ocr_dict = {
+                th.load_model('ocr_model.pt'): ('~', 0),
+                }
     
     canvas = Canvas(GRID_W, GRID_H) # Initialize a canvas object (see canvas.py).
 

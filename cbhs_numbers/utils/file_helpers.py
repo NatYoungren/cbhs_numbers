@@ -3,6 +3,7 @@
 # December 7, 2023
 
 import os
+import datetime
 import numpy as np
 from PIL import Image
 from pathlib import Path
@@ -48,7 +49,8 @@ def save_canvas(canvas: np.ndarray,
                 digit: str,
                 adjective: str='',
                 target_dir: str=SAVE_DIR,
-                img_ext: str='png') -> None:
+                img_ext: str='png',
+                relative: bool=True) -> None:
     
     # Remove all non-alphabetic characters from adjective (just in case).
     adjective = whitelist_chars(adjective.lower(), ALLOWED_CHARACTERS)
@@ -58,28 +60,26 @@ def save_canvas(canvas: np.ndarray,
         adjective = '$NOADJ'
         
     # Create the digit directory if it doesn't exist.
+    if relative:
+        target_dir = os.path.join(os.path.dirname(__file__), target_dir)
     digit_dir = os.path.join(target_dir, digit)
     Path(digit_dir).mkdir(parents=True, exist_ok=True)
     
-    # Generate the filename template (e.g. '0_$NOADJ_{}.png').
-    # NOTE: The '{}' will be replaced with the first available image number.
-    filename = f'{digit}_{adjective}_{"{}"}.{img_ext}'
-
-    # Find the next available image number.
-    # NOTE: Searching like this is not scalable, but this is fine for limited numbers of files.
-    img_num = 0
-    while os.path.exists(os.path.join(digit_dir, filename.format(img_num))):
-        img_num += 1
+    # Generate the filename template (e.g. '0_$NOADJ_{datetime}.png').
+    now = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+    filename = f'{digit}_{adjective}_{now}.{img_ext}'
     
     # Convert the canvas to a PIL image and save it.
     img = img_frombytes(canvas)
-    img.save(os.path.join(digit_dir, filename.format(img_num)))
+    img.save(os.path.join(digit_dir, filename))
     
     # Update DIGIT_COUNTS to reflect the new digit.
     DIGIT_COUNTS[digit] += 1
 
 # Populates DIGIT_COUNTS with the number of images in each digit directory.
-def populate_digit_counts(target_dir: str=SAVE_DIR) -> None:
+def populate_digit_counts(target_dir: str=SAVE_DIR, relative:bool=True) -> None:
+    if relative:
+        target_dir = os.path.join(os.path.dirname(__file__), target_dir)
     for d in DIGITS:
         digit_dir = os.path.join(target_dir, d)
         Path(digit_dir).mkdir(parents=True, exist_ok=True)

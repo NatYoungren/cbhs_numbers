@@ -27,6 +27,7 @@ import utils.torch_helpers as th
 # m1 -> Draw
 # m2 -> Erase
 
+# SPACE -> Randomly shift drawing
 # 'R' -> Reset
 
 # ESC -> Quit
@@ -122,67 +123,43 @@ def main():
     font = pg.font.Font(TEXT_FONT, TEXT_SIZE)
     prompt_font = pg.font.Font(TEXT_FONT, PROMPT_TEXT_SIZE)
 
-    # Load the trained OCR neural net.
-    ocr_net = th.load_model('recognition/digit_mnist_model.pt')
-    ocr_net2 = th.load_model2('recognition/digit_mnist_model2.pt')
-    ocr_net3 = th.load_model3('recognition/digit_mnist_model3.pt')
-    ocr_net4 = th.load_model4('recognition/digit_mnist_model4.pt')
-    ocr_net5 = th.load_model5('digit_mnist_model5.pt')
-    ocr_net6 = th.load_model5('/Users/nathanielyoungren/Desktop/code_projects/cbhs_numbers/ml_training/test_model.pt')
+    # Create a dict of OCR models and current predictions.
+    ocr_dict = {th.load_model('test_model1.pt'): ('~', 0),
+                th.load_model('test_model2.pt'): ('~', 0),
+                th.load_model2('best_model1.pt'): ('~', 0),
+                th.load_model2('best_model2.pt'): ('~', 0),}
     
     canvas = Canvas(GRID_W, GRID_H) # Initialize a canvas object (see canvas.py).
 
     running = True              # Flag to continue running the program.
-    pred5 , pred6 = '~' * 2
+
     # Main loop.
     while running:        
 
         # Handle keypress events (quitting, resetting).
-        (running, test_shift, canvas_changed) = parse_key_input(canvas)
+        (running, canvas_changed) = parse_key_input(canvas)
         # NOTE: These flags must be resolved before the next set of events is parsed.
         #   If running = False, the program will exit after this loop finishes.
         
         # Handle mouse events (drawing and erasing).
         canvas_changed = parse_mouse_input(canvas) or canvas_changed
 
-        # Randomly shift the drawing inside the canvas.
-        if test_shift:
-            canvas.pixels = random_alignment(canvas.pixels)
-
         # Redraw the current state of the canvas.
         draw_canvas(screen, canvas)
         
         # Draw text to the screen.
         if ENABLE_TEXT:
-            if canvas_changed:
-                # pred = th.evaluate(ocr_net, canvas)
-                # pred2 = th.evaluate(ocr_net2, canvas)
-                # pred3 = th.evaluate(ocr_net3, canvas)
-                # pred4 = th.evaluate(ocr_net4, canvas)
-                pred5 = th.evaluate(ocr_net5, canvas.pixels)
-                pred6 = th.evaluate(ocr_net6, canvas.pixels)
+            if not canvas.pixels.any() or canvas.pixels.all():
+                ocr_dict = {model:('~', 0) for model in ocr_dict.keys()}
+            elif canvas_changed:
+                ocr_dict = {model:th.evaluate(model, canvas.pixels) for model in ocr_dict.keys()}
 
-            draw_upper_text(screen, font, f'{pred5} - {pred6}')
+            draw_upper_text(screen, prompt_font, ' - '.join([f'{pred}' for pred, _ in ocr_dict.values()]))
             draw_lower_text(screen, font)
             
         pg.display.flip()
         clock.tick(60)
 
-
-def random_alignment(img):
-    ax1sums = np.sum(img, axis=0)
-    up_shift = np.argmax(ax1sums>0)
-    down_shift = np.argmax(ax1sums[::-1]>0)
-    
-    ax2sums = np.sum(img, axis=1)
-    left_shift = np.argmax(ax2sums>0)
-    right_shift = np.argmax(ax2sums[::-1]>0)
-
-    random_y = random.randint(-up_shift, down_shift)
-    random_x = random.randint(-left_shift, right_shift)
-    
-    return np.roll(img, (random_x, random_y), axis=(0, 1))
-    # return f'{up_shift}, {down_shift} - {left_shift}, {right_shift}'
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                   # EVENT HANDLING: #                   #
@@ -198,7 +175,6 @@ def parse_key_input(canvas: Canvas):
     
     # These are the default values we will return each frame unless an event changes them.
     running = True              # By default, keep running the program.
-    test_shift = False
     canvas_changed = False               # By default, do not save the current canvas.
 
     # Handle pygame events.
@@ -216,19 +192,20 @@ def parse_key_input(canvas: Canvas):
             # R key resets the current canvas.
             elif event.key == pg.K_r:
                 canvas.reset()
+                canvas.set_brush_radius()
                 canvas_changed = True
             
             # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
             # Spacebar randomly shifts the drawing inside the canvas.
             elif event.key == pg.K_SPACE:
-                test_shift = True
+                canvas.pixels = th.random_alignment(canvas.pixels)
                 canvas_changed = True
         
         # Handle quit event (Control-Q or clicking the X on the window).
         elif event.type == pg.QUIT:
             running = False
             
-    return running, test_shift, canvas_changed
+    return running, canvas_changed
 
 
 def parse_mouse_input(canvas: Canvas):

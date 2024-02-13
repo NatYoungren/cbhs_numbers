@@ -109,13 +109,48 @@ class Canvas:
         x_idx = bisect([cell_pos[0], cell_pos[0] + 1], brush_pos[0])
         y_idx = bisect([cell_pos[1], cell_pos[1] + 1], brush_pos[1])
         
-        # 0 = brush coord is below lower cell coord
-        # 1 = brush coord is within cell coord
-        # 2 = brush coord is above upper cell coord
+        # NOTE: b == brush coordinate, c = cell edge coordinate
         
-        # Get the closest point of the cell to the brush center
-        x_reference = [cell_pos[0], brush_pos[0], cell_pos[0] + 1][x_idx]
-        y_reference = [cell_pos[1], brush_pos[1], cell_pos[1] + 1][y_idx]
-    
-        # Return True if closest point is within the brush radius
-        return math.hypot(x_reference-brush_pos[0], y_reference-brush_pos[1]) <= self.brush_radius
+        # 0 = brush coord is below lower cell coord
+        #        c-------c
+        #     b
+        
+        # 1 = brush coord is between upper/lower cell coords
+        #        c-------c
+        #            b
+        
+        # 2 = brush coord is beyond upper cell coord
+        #        c-------c
+        #                   b
+        
+        # Get the closest point of the cell to the brush center.
+        x_closest = [cell_pos[0], brush_pos[0], cell_pos[0] + 1][x_idx]
+        y_closest = [cell_pos[1], brush_pos[1], cell_pos[1] + 1][y_idx]
+        
+        # NOTE: X = point of cell closest to brush.
+        #       Remember that in computer graphics, y increases as you move down the screen.
+
+        # If x_idx == 1 and y_idx == 1, the brush is within the cell.
+        #        c-------c
+        #        |  bX   |
+        #        |       |
+        #        c-------c
+        # The closest point IS the brush center, this is the only trivial case where calling math.hypot is technically unnecessary.
+        
+        # If x_idx == 0 and y_idx == 2, the brush has a lower x and higher y coord than any part of the cell.
+        #        c-------c
+        #        |       |
+        #        |       |
+        #        X-------c
+        #   b
+        # The closest point is the corner with the lowest x and highest y (bottom left).
+        
+        # If x_idx == 2 and y_idx == 1, the brush has a higher x than any part of the cell, and a y coord between the cell's top and bottom.
+        #        c-------c
+        #        |       X    b
+        #        |       |
+        #        c-------c
+        # The closest point has the highest possible x coord and the same y coord as the brush center.
+        
+        # Return True if the reference point is within the brush radius
+        return math.hypot(x_closest - brush_pos[0], y_closest - brush_pos[1]) <= self.brush_radius
